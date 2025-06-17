@@ -31,11 +31,16 @@ void drive(float distance, float speed);
  */
 void drive(float distance);
 /***
- * Shoots.
- * @param strength the strength of the shot in %
+ * Moves the paddle to a target position.
+ * @param degrees the degrees of rotation in degrees relative to the back position
  * @author Team Emily
  */
-void shoot(float strength);
+void movePaddle(float degrees);
+/***
+ * Moves the paddle by a specific amount.
+ * @param degrees the degrees of rotation in degrees to move the paddle by
+ */
+void movePaddleRel(float degrees);
 /***
  * Measures forward distance.
  * @return the distance to the next obstacle in front of the robot.
@@ -60,3 +65,12 @@ float rightDistance();
  * @author Team Emily
  */
 float downDistance();
+
+
+//----- section : start methods
+
+void startSoccer();
+
+void startSlalom();
+
+void startGolf();
