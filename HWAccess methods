@@ -1,0 +1,62 @@
+/***
+ * Rotates the bot around a point on the axis of the wheels.
+ * @param degrees the degrees of the rotation in degrees
+ * @param distanceOnAxis the distance in cm from the center between the wheels, positive is to the right
+ * @param speed the speed in %
+ * @endcond rotation is done
+ * @author Team Emily
+ */
+void rotate(float degrees, float distanceOnAxis, float speed);
+/***
+ * Rotates the bot around a point on the axis of the wheels at 50% speed.
+ * @param degrees the degrees of the rotation in degrees
+ * @param distanceOnAxis the distance from the center between the wheels, positive is to the right
+ * @endcond rotation is done
+ * @author Team Emily
+ */
+void rotate(float degrees, float distanceOnAxis);
+/***
+ * Drives forward.
+ * @param distance the distance in cm to drive.
+ * @param speed the speed in %
+ * @endcond driving is done
+ * @author Team Emily
+ */
+void drive(float distance, float speed);
+/***
+ * Drives forward at 50% speed.
+ * @param distance the distance in cm to drive.
+ * @endcond driving is done
+ * @author Team Emily
+ */
+void drive(float distance);
+/***
+ * Shoots.
+ * @param strength the strength of the shot in %
+ * @author Team Emily
+ */
+void shoot(float strength);
+/***
+ * Measures forward distance.
+ * @return the distance to the next obstacle in front of the robot.
+ * @author Team Emily
+ */
+float forwardDistance();
+/***
+ * Measures left distance.
+ * @return the distance to the next obstacle on the left of the robot.
+ * @author Team Emily
+ */
+float leftDistance();
+/***
+ * Measures right distance.
+ * @return the distance to the next obstacle on the right of the robot.
+ * @author Team Emily
+ */
+float rightDistance();
+/***
+ * Measures downward distance.
+ * @return the distance to the next obstacle under the robot.
+ * @author Team Emily
+ */
+float downDistance();
