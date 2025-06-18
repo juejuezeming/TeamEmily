@@ -23,10 +23,10 @@ double rp = 1, ri = 1, rd = 1;
 double setpoint2, input2, output2;
 double lp = 1, li = 1, ld = 1;
 
-PID pid_right(&setpoint1, &input1, &output1, rp, ri, rd, 2);
-PID pid_left(&setpoint2, &input2, &output2, lp, li, ld, 2);
+PID pid_right(&setpoint1, &input1, &output1, rp, ri, rd, 0);
+PID pid_left(&setpoint2, &input2, &output2, lp, li, ld, 0);
 
-static const float ticks_per_cm;
+static const float ticks_per_cm = 10.0; // TODO: measure this value
 
 /***
  * Rotates the bot around a point on the axis of the wheels.
