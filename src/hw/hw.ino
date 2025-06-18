@@ -1,6 +1,7 @@
+#include <PID_v1.h>
+
 #include <Encoder.h>
 #include <Arduino.h>
-#include <PID.h>
 
 
 
@@ -17,20 +18,13 @@
 Encoder right_enc(18,19);
 Encoder left_enc(20,21);
 
-
-
-
-
-const float PI = 3.1415926;
-
-
 double setpoint1, input1, output1;
 double rp = 1, ri = 1, rd = 1; 
 double setpoint2, input2, output2;
 double lp = 1, li = 1, ld = 1;
 
-PID pid_right(&setpoint1, &input1, &output1, rp, ri, rd);
-PID pid_left(&setpoint2, &input2, &output2, lp, li, ld);
+PID pid_right(&setpoint1, &input1, &output1, rp, ri, rd, 2);
+PID pid_left(&setpoint2, &input2, &output2, lp, li, ld, 2);
 
 static const float ticks_per_cm;
 
@@ -42,7 +36,7 @@ static const float ticks_per_cm;
  * @endcond rotation is done
  * @author Team Emily
  */
-void rotate (float degrees, float dist, float speed){
+void rotate (float deg, float dist, float s){
 
   reset_l_PID();
   reset_r_PID();
@@ -50,13 +44,13 @@ void rotate (float degrees, float dist, float speed){
   pid_right.SetMode(AUTOMATIC);
   pid_left.SetMode(AUTOMATIC);
 
-  float lefr_wheel_circ = (wheel_setoff + dist) * 2 * PI;
+  float left_wheel_circ = (wheel_setoff + dist) * 2 * PI;
   float right_wheel_circ = (wheel_setoff - dist) * 2 * PI; 
   float middle_circ = dist * 2 * PI; // maybe for later
 
 
-  float left_dist = left_wheel_circ * (degrees / 360);
-  float right_dist = right_wheel_circ * (degrees / 360);
+  float left_dist = left_wheel_circ * (deg / 360);
+  float right_dist = right_wheel_circ * (deg / 360);
 
   float total_dist = max(abs(left_dist), abs(right_dist));
   float left_ratio = left_dist / total_dist;
