@@ -22,15 +22,13 @@ VL53L0X sensor;
 Servo myservo;
 
 // Pin-Definitionen for button/LED logic
-const int buttonPins[2] = {A1, A2};
+const int state_button = A1;
+const int start_button = A2;
 const int ledPins[3] = {6, 7, 8};  // Use 6,7,8 to avoid conflicts with encoder pins
 const int executePin = 9;          // Use 9 to avoid conflicts with encoder pins
 
 // State-Variable (1..3 = LEDs)
 int state = 1;  // Start with State 1
-// State 1 -> fußball
-// State 2 -> golf
-// State 3 -> slalom
 
 void updateLEDs() {
     for (int i = 0; i < 3; i++) {
@@ -64,19 +62,36 @@ void setup() {
 }
 
 void loop() {
-    // Button 1 (A1): Durch die 3 States schalten
-    if (digitalRead(buttonPins[0]) == LOW) {
-        state++;
-        if (state > 3) state = 1;  // States 1 bis 3 zyklisch
-        updateLEDs();
-        delay(200);  // Entprellzeit
+    while (true) {
+        // Button 1 (A1): Durch die 3 States schalten
+        if (digitalRead(state_button) == LOW) {
+            state++;
+            state = state % 3;
+            updateLEDs();
+            delay(200);  // Entprellzeit
+        }
+
+        if (digitalRead(start_button) == LOW) {
+            break;
+            delay(200);  // Entprellzeit
+        }
     }
 
-    // Button 2 (A2): Execute LED kurz einschalten
-    if (digitalRead(buttonPins[1]) == LOW) {
-        digitalWrite(executePin, HIGH);
-        delay(2000);  // Execute LED 2 Sekunden an
-        digitalWrite(executePin, LOW);
-        delay(200);  // Entprellzeit
+    switch (state) {
+        case 0:  // football
+            startFootball();
+            break;
+
+        case 1:  // golf
+            startGolf();
+            break;
+
+        case 2:  // slalom
+            startSlalom();
+            break;
+
+        default:
+            Serial.println("Shouldn't happen");
+            break;
     }
 }
