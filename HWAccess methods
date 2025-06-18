@@ -46,6 +46,10 @@ void movePaddleRel(float degrees);
  * @return the distance to the next obstacle in front of the robot.
  * @author Team Emily
  */
+void resetPaddle();
+/**
+ * Moves paddle to 0 point
+ */
 float forwardDistance();
 /***
  * Measures left distance.
