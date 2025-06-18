@@ -73,7 +73,7 @@ float downDistance();
 
 //----- section : start methods
 
-void startSoccer();
+void startFootball();
 
 void startSlalom();
 
