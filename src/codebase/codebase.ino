@@ -32,7 +32,7 @@ int state = 1;  // Start with State 1
 
 void updateLEDs() {
     for (int i = 0; i < 3; i++) {
-        digitalWrite(ledPins[i], (state == i + 1) ? HIGH : LOW);
+        digitalWrite(ledPins[i], (state == i) ? HIGH : LOW);
     }
 }
 
