@@ -17,49 +17,53 @@ VL53L0X sensor;
 static int servoPin;
 static Servo servo;
 
+
+static const int ledPin = 8;
+
 void setup() {
   // put your setup code here, to run once:
 
   Serial.begin(9600);
-  Wire.begin();
-  Serial.println("Basic NoInterrupts Test:");
+  //Wire.begin();
+  //Serial.println("Basic NoInterrupts Test:");
 
-  servo.attach(servoPin);
+  //servo.attach(servoPin);
 
   //set sensor pin
 
-  sensor.init();
-  sensor.setTimeout(500);
+  //sensor.init();
+  //sensor.setTimeout(500);
 
-  sensor.setMeasurementTimingBudget(20000);
+  //sensor.setMeasurementTimingBudget(20000);
 
   
 
   
   Serial.println("Done Setup");
 
-  //pinMode(ledPin, OUTPUT);
+  pinMode(ledPin, OUTPUT);
 
 }
 
 
 
-static const int ledPin = 11;
 
 
 static long receivedNumber = 0;
 void loop() {
   // put your main code here, to run repeatedly:
 
-  int dist = sensor.readRangeSingleMillimeters();
+  //int dist = sensor.readRangeSingleMillimeters();
 
-  if(dist < 500){
-  Serial.print("Distance: ");
-  Serial.print(dist);
-  Serial.println(" mm");
-  }
+  //if(dist < 500){
+  //Serial.print("Distance: ");
+  //Serial.print(dist);
+  //Serial.println(" mm");
+  //}
 
   delay(100);
+
+  Serial.println("UwU");
 
   if (Serial.available()>0) {
     receivedNumber = Serial.parseInt();  // Reads an integer from serial

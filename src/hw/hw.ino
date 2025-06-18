@@ -15,10 +15,12 @@
 #define wheel_setoff 10
 
 #define DEBUG
-#define DEBUG3
+//#define DEBUG3
 //#define DEBUG_ENC
-#define DEBUG2
-#define DEBUGOUTPUT
+//#define DEBUG2
+//#define DEBUGOUTPUT
+
+#define DEBUGPID
 
 #define ENCODER_USE_INTERRUPTS
 
@@ -127,23 +129,35 @@ void rotate (float deg, float dist = 0, float s = 50){
     Serial.println(output1);
     #endif
 
+    #ifdef DEBUGPID
+    Serial.print("PID Left in: ");
+    Serial.print(input1);
+    Serial.print(", out: ");
+    Serial.print(output1);
+    Serial.print(", setpoint: ");
+    Serial.println(setpoint1);
+    Serial.print("PID Right in: ");
+    Serial.print(input2);
+    Serial.print(", out: ");
+    Serial.print(output2);
+    Serial.print(", setpoint: ");
+    Serial.println(setpoint2);
+    #endif
+
     
-    if(output2 > 0 || true){
-      analogWrite(right_forward_pin, constrain(abs(output2), 0, 255)); // TODO: some translation
+    if(output2 > 0){
+      analogWrite(right_forward_pin, constrain(abs(output2) * 10, 0, 255)); // TODO: some translation
       analogWrite(right_backward_pin, 0);
     }else{
-      analogWrite(right_backward_pin, constrain(abs(output2), 0, 255));
+      analogWrite(right_backward_pin, constrain(abs(output2) * 10, 0, 255));
       analogWrite(right_forward_pin, 0);
     }
 
-  
-    
-
     if(output1 > 0){
-      analogWrite(left_forward_pin, constrain(abs(output1), 0, 255)); // TODO: some translation
+      analogWrite(left_forward_pin, constrain(abs(output1) * 10, 0, 255)); // TODO: some translation
       analogWrite(left_backward_pin, 0);
     }else{
-      analogWrite(left_backward_pin, constrain(abs(output1), 0, 255));
+      analogWrite(left_backward_pin, constrain(abs(output1) * 10, 0, 255));
       analogWrite(left_forward_pin, 0);  
     }
 
@@ -176,17 +190,27 @@ void reset_r_PID(){
   input1 = 0;
   output1 = 0;
   setpoint1 = 0;
+  pid_right.SetMode(MANUAL);
+  pid_right.SetMode(AUTOMATIC);
+  pid_right.SetOutputLimits(-255., 255);
 }
 
 void reset_l_PID(){
   input2 = 0;
   output2 = 0;
   setpoint2 = 0;
+  pid_left.SetMode(MANUAL);
+  pid_left.SetMode(AUTOMATIC);
+  pid_left.SetOutputLimits(-255., 255);
 }
 
 
 void setup() {
   // put your setup code here, to run once:
+  pid_left.SetOutputLimits(-255, 255);
+  pid_right.SetOutputLimits(-255, 255);
+
+
   Serial.begin(9600);
 
   Serial.println("Init done");
