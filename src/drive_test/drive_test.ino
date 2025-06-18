@@ -44,7 +44,7 @@ void setup() {
 
 
 
-static const int ledPin = 44;
+static const int ledPin = 11;
 
 
 static long receivedNumber = 0;
@@ -67,12 +67,12 @@ void loop() {
     Serial.println(receivedNumber);
 
     if(receivedNumber > 0){
-      //analogWrite(ledPin,  receivedNumber);
+      analogWrite(ledPin,  receivedNumber);
       float fnum = (float) receivedNumber;
-      servo.write(fnum);
+      //servo.write(fnum);
 
-      Serial.print("rotating servo to: ");
-      Serial.println(fnum);
+      //Serial.print("rotating servo to: ");
+      //Serial.println(fnum);
       delay(100);
 
     }

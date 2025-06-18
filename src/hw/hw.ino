@@ -5,16 +5,20 @@
 
 
 
-#define right_forward_pin 10
-#define right_backward_pin 11
-#define left_forward_pin 8
-#define left_backward_pin 9
+#define right_forward_pin 8
+#define right_backward_pin 9
+#define left_forward_pin 11
+#define left_backward_pin 10
 
 
 #define speed 200
 #define wheel_setoff 10
 
 #define DEBUG
+#define DEBUG3
+//#define DEBUG_ENC
+#define DEBUG2
+#define DEBUGOUTPUT
 
 #define ENCODER_USE_INTERRUPTS
 
@@ -26,8 +30,8 @@ double rp = 1, ri = 1, rd = 1;
 double setpoint2, input2, output2;
 double lp = 1, li = 1, ld = 1;
 
-PID pid_right(&setpoint1, &input1, &output1, rp, ri, rd, 0);
-PID pid_left(&setpoint2, &input2, &output2, lp, li, ld, 0);
+PID pid_right(&input1, &output1, &setpoint1, rp, ri, rd, 0);
+PID pid_left(&input2, &output2, &setpoint2, lp, li, ld, 0);
 
 static const float ticks_per_cm = 1700; // TODO: measure this value
 static const float steps_per_cm = 50.0; // TODO: measure this value
@@ -78,7 +82,7 @@ void rotate (float deg, float dist = 0, float s = 50){
   right_enc.write(0);
 
 
-#define DEBUG3
+
   for(float step = 0; step <= total_dist; step+= .01){
     setpoint2 = (step * left_ratio);
     setpoint1 = (step * right_ratio);
@@ -98,7 +102,6 @@ void rotate (float deg, float dist = 0, float s = 50){
     input1 = ticks_to_cm(right_enc.read());
 
 {
-  #define DEBUG2
     #ifdef DEBUG2
     Serial.print("Input Left: ");
     Serial.print(input2);
@@ -126,7 +129,7 @@ void rotate (float deg, float dist = 0, float s = 50){
 
     
     if(output2 > 0 || true){
-      analogWrite(right_forward_pin, constrain(abs(output2), 255, 255)); // TODO: some translation
+      analogWrite(right_forward_pin, constrain(abs(output2), 0, 255)); // TODO: some translation
       analogWrite(right_backward_pin, 0);
     }else{
       analogWrite(right_backward_pin, constrain(abs(output2), 0, 255));
@@ -137,10 +140,10 @@ void rotate (float deg, float dist = 0, float s = 50){
     
 
     if(output1 > 0){
-      analogWrite(left_forward_pin, 255-  constrain(abs(output1), 0, 255)); // TODO: some translation
+      analogWrite(left_forward_pin, constrain(abs(output1), 0, 255)); // TODO: some translation
       analogWrite(left_backward_pin, 0);
     }else{
-      analogWrite(left_backward_pin, 255-  constrain(abs(output1), 0, 255));
+      analogWrite(left_backward_pin, constrain(abs(output1), 0, 255));
       analogWrite(left_forward_pin, 0);  
     }
 
