@@ -4,8 +4,8 @@
 #include <VL53L0X.h>
 #include <Wire.h>
 
-#include "pins_arduino.h"
 #include "paddle.h"
+#include "pins_arduino.h"
 
 // Encoder Pin Definitions
 static const int right_wheel_enc_1 = 2;
@@ -28,6 +28,9 @@ const int executePin = 9;          // Use 9 to avoid conflicts with encoder pins
 
 // State-Variable (1..3 = LEDs)
 int state = 1;  // Start with State 1
+// State 1 -> fußball
+// State 2 -> golf
+// State 3 -> slalom
 
 void updateLEDs() {
     for (int i = 0; i < 3; i++) {
@@ -55,34 +58,25 @@ void setup() {
     Wire.begin();
     sensor.init();
     sensor.setTimeout(500);
-    myservo.attach(10); // Example pin, adjust as needed
+    myservo.attach(10);  // Example pin, adjust as needed
 
     updateLEDs();  // Show initial state
 }
 
 void loop() {
-    // Button 1 (A1): Cycle through the 3 states
+    // Button 1 (A1): Durch die 3 States schalten
     if (digitalRead(buttonPins[0]) == LOW) {
         state++;
-        if (state > 3) state = 1;  // Cycle states 1 to 3
+        if (state > 3) state = 1;  // States 1 bis 3 zyklisch
         updateLEDs();
-        delay(200);  // Debounce
+        delay(200);  // Entprellzeit
     }
 
-    // Button 2 (A2): Execute LED on for 2 seconds
+    // Button 2 (A2): Execute LED kurz einschalten
     if (digitalRead(buttonPins[1]) == LOW) {
         digitalWrite(executePin, HIGH);
-        delay(2000);  // Execute LED on for 2 seconds
+        delay(2000);  // Execute LED 2 Sekunden an
         digitalWrite(executePin, LOW);
-        delay(200);   // Debounce
+        delay(200);  // Entprellzeit
     }
-
-    // --- Place additional main code here if needed ---
-    // For example, using encoders, servo, or sensor:
-    // long rightPos = rightWheel.read();
-    // long leftPos = leftWheel.read();
-    // int distance = sensor.readRangeSingleMillimeters();
-    // myservo.write(angle);
-
-    // (Optional: Insert your logic that works with above hardware here)
 }
