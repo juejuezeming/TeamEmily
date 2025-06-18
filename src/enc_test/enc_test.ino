@@ -3,7 +3,7 @@
 
 #include "pins_arduino.h"
 
-#define ENCODER_DO_NOT_USE_INTERRUPTS
+#define ENCODER_USE_INTERRUPTS
 
 Encoder myEnc(2,3);
 
@@ -20,7 +20,7 @@ void loop() {
     position = newPos;
     Serial.println(position);
   }
-  Serial.println(position);
+  //Serial.println(position);
   //delay(200);
   // With any substantial delay added, Encoder can only track
   // very slow motion.  You may uncomment this line to see
