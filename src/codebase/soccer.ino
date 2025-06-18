@@ -2,6 +2,7 @@
 
 const int maxWerte = 100;
 uint16_t distances[maxWerte];
+const treshhold;
 
 
 void drive_to_ball(){
@@ -37,6 +38,21 @@ void spot_goal_and_keeper(){
   }
 
 }
+
+void choose_where_to_shoot{
+  int steps = 0;
+  while(steps <= 7){
+    if (sensor.readRangeSingleMillimeters() > treshhold){
+        shoot();
+        return;
+    }
+    steps++;
+    rotate(steps, 1);
+  }
+  rotate(9, 1);
+  shoot();
+}
+
 
 
 void shoot(){
