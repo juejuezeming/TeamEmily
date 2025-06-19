@@ -5,8 +5,7 @@
 
 #define ENCODER_USE_INTERRUPTS
 
-Encoder myEnc(2,3);
-
+Encoder myEnc(19,18);
 void setup() {
   Serial.begin(9600);
   Serial.println("Basic NoInterrupts Test:");

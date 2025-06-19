@@ -5,10 +5,10 @@
 
 
 
-#define right_forward_pin 8
-#define right_backward_pin 9
-#define left_forward_pin 11
-#define left_backward_pin 10
+#define right_forward_pin 11
+#define right_backward_pin 10
+#define left_forward_pin 8
+#define left_backward_pin 9
 
 
 #define speed 200
@@ -25,21 +25,21 @@
 
 #define ENCODER_USE_INTERRUPTS
 
-Encoder right_enc(2,3);
+Encoder right_enc(3,2);
 Encoder left_enc(19,18);
 
 double setpointr, inputr, outputr;
-double rp = 2, ri = 0, rd = 0; 
+double rp = 100, ri = 0, rd = 0; 
 double setpointl, inputl, outputl;
-double lp = 2, li = 0, ld = 0;
+double lp = 100, li = 0, ld = 0;
 
 PID pid_right(&inputr, &outputr, &setpointr, rp, ri, rd, 0);
 PID pid_left(&inputl, &outputl, &setpointl, lp, li, ld, 0);
 
-static const float ticks_per_cm = 1700; // TODO: measure this value
+static const float ticks_per_cm = 1700 / (2* PI); // TODO: measure this value
 static const float steps_per_cm = 50.0; // TODO: measure this value
 
-static const int in_loop_delay = 10;
+static const int in_loop_delay = 0;
 /***
  * Rotates the bot around a point on the axis of the wheels.
  * @param degrees the degrees of the rotation in degrees
@@ -48,40 +48,16 @@ static const int in_loop_delay = 10;
  * @endcond rotation is done
  * @author Team Emily
  */
-void rotate (float deg, float dist = 0, float s = 50){
 
+
+void drive_differential (float left_distance, float right_distance, float s = 50){
   reset_l_PID();
   reset_r_PID();
 
-  pid_right.SetMode(AUTOMATIC);
-  pid_left.SetMode(AUTOMATIC);
 
-  float left_wheel_circ = (wheel_setoff + dist) * 2 * PI;
-  float right_wheel_circ = (-wheel_setoff + dist) * 2 * PI; 
-  float middle_circ = dist * 2 * PI; // maybe for later
-
-
-  float left_dist = left_wheel_circ * (deg / 360);
-  float right_dist = right_wheel_circ * (deg / 360);
-
-  #ifdef DEBUG
-  Serial.print("Left Wheel Circumference: ");
-  Serial.print(left_wheel_circ);
-  Serial.print(" cm, Right Wheel Circumference: ");
-  Serial.print(right_wheel_circ);
-  Serial.print(" cm, Middle Circumference: ");
-  Serial.print(middle_circ);
-  Serial.println(" cm");
-  Serial.print("Left Distance: ");
-  Serial.print(left_dist);
-  Serial.print(" cm, Right Distance: ");
-  Serial.print(right_dist);
-  Serial.println(" cm");
-  #endif
-
-  float total_dist = max(abs(left_dist), abs(right_dist));
-  float left_ratio = left_dist / total_dist;
-  float right_ratio = right_dist / total_dist;
+  float total_dist = max(abs(left_distance), abs(right_distance));
+  float left_ratio = left_distance / total_dist;
+  float right_ratio = right_distance / total_dist;
 
   left_enc.write(0);
   right_enc.write(0);
@@ -148,26 +124,26 @@ void rotate (float deg, float dist = 0, float s = 50){
     #endif
 
     
-    if(outputl < 0){
-      analogWrite(right_forward_pin, constrain(abs(outputl) * 10, 0, 255)); // TODO: some translation
+    if(outputr > 0){
+      analogWrite(right_forward_pin, constrain(abs(outputr), 0, 255)); // TODO: some translation
       analogWrite(right_backward_pin, 0);
     }else{
-      analogWrite(right_backward_pin, constrain(abs(outputl) * 10, 0, 255));
+      analogWrite(right_backward_pin, constrain(abs(outputr), 0, 255));
       analogWrite(right_forward_pin, 0);
     }
 
-    if(outputr < 0){
-      analogWrite(left_forward_pin, constrain(abs(outputr) * 10, 0, 255)); // TODO: some translation
+    if(outputl > 0){
+      analogWrite(left_forward_pin, constrain(abs(outputl), 0, 255)); // TODO: some translation
       analogWrite(left_backward_pin, 0);
     }else{
-      analogWrite(left_backward_pin, constrain(abs(outputr) * 10, 0, 255));
+      analogWrite(left_backward_pin, constrain(abs(outputl), 0, 255));
       analogWrite(left_forward_pin, 0);  
     }
 
     delay(in_loop_delay);
   }
-  setpointl = left_dist;
-  setpointr = right_dist;
+  setpointl = left_distance;
+  setpointr = right_distance;
 
   #ifdef DEBUGINTERMEDIATE
   Serial.print("PID Left in: ");
@@ -192,26 +168,26 @@ void rotate (float deg, float dist = 0, float s = 50){
   #endif
 
 
-  while (abs(inputl - setpointl) > 0.1 /*|| abs(inputr - setpointr) > 0.1*/) {
+  while (abs(inputl - setpointl) > 0.1 || abs(inputr - setpointr) > 0.1) {
     inputl = ticks_to_cm(left_enc.read());
     inputr = ticks_to_cm(right_enc.read());
 
     pid_left.Compute();
     pid_right.Compute();
 
-    if(outputl < 0){
-      analogWrite(right_forward_pin, constrain(abs(outputl) * 10, 0, 255));
+    if(outputr > 0){
+      analogWrite(right_forward_pin, constrain(abs(outputr), 0, 255));
       analogWrite(right_backward_pin, 0);
     }else{
-      analogWrite(right_backward_pin, constrain(abs(outputl) * 10, 0, 255));
+      analogWrite(right_backward_pin, constrain(abs(outputr), 0, 255));
       analogWrite(right_forward_pin, 0);
     }
 
-    if(outputr < 0){
-      analogWrite(left_forward_pin, constrain(abs(outputr) * 10, 0, 255));
+    if(outputl > 0){
+      analogWrite(left_forward_pin, constrain(abs(outputl), 0, 255));
       analogWrite(left_backward_pin, 0);
     }else{
-      analogWrite(left_backward_pin, constrain(abs(outputr) * 10, 0, 255));
+      analogWrite(left_backward_pin, constrain(abs(outputl), 0, 255));
       analogWrite(left_forward_pin, 0);  
     }
 
@@ -228,6 +204,41 @@ void rotate (float deg, float dist = 0, float s = 50){
   #endif
 
 }
+
+void rotate (float deg, float dist = 0, float s = 50){
+
+  
+
+  pid_right.SetMode(AUTOMATIC);
+  pid_left.SetMode(AUTOMATIC);
+
+  float left_wheel_circ = (wheel_setoff + dist) * 2 * PI;
+  float right_wheel_circ = (-wheel_setoff + dist) * 2 * PI; 
+  float middle_circ = dist * 2 * PI; // maybe for later
+
+
+  float left_dist = left_wheel_circ * (deg / 360);
+  float right_dist = right_wheel_circ * (deg / 360);
+
+  #ifdef DEBUG
+  Serial.print("Left Wheel Circumference: ");
+  Serial.print(left_wheel_circ);
+  Serial.print(" cm, Right Wheel Circumference: ");
+  Serial.print(right_wheel_circ);
+  Serial.print(" cm, Middle Circumference: ");
+  Serial.print(middle_circ);
+  Serial.println(" cm");
+  Serial.print("Left Distance: ");
+  Serial.print(left_dist);
+  Serial.print(" cm, Right Distance: ");
+  Serial.print(right_dist);
+  Serial.println(" cm");
+  #endif
+
+  drive_differential(left_dist, right_dist, s);
+
+}
+
 
 float ticks_to_cm(long count){
   return count / ticks_per_cm;
@@ -293,9 +304,20 @@ void test_rotate_serial() {
     if (deg != 0.0) {
       Serial.print("Rotating: ");
       Serial.println(deg);
-      rotate(deg);
+      drive_differential(10, 0 );
       Serial.println("Done rotating.");
     }
+    // print overshoot
+    delay(2000);
+    float distl = ticks_to_cm(left_enc.read());
+    float distr = ticks_to_cm(right_enc.read());
+    Serial.print("Left Distance: ");
+    Serial.print(distl);
+    Serial.print(" cm, Right Distance: ");
+    Serial.print(distr);
+    Serial.println(" cm");
+
+
   }
   
 }

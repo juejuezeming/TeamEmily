@@ -18,7 +18,7 @@ static int servoPin;
 static Servo servo;
 
 
-static const int ledPin = 8;
+static const int ledPin = 11;
 
 void setup() {
   // put your setup code here, to run once:
@@ -63,7 +63,7 @@ void loop() {
 
   delay(100);
 
-  Serial.println("UwU");
+  //Serial.println("UwU");
 
   if (Serial.available()>0) {
     receivedNumber = Serial.parseInt();  // Reads an integer from serial
