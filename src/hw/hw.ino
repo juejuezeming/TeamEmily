@@ -29,9 +29,9 @@ Encoder right_enc(3,2);
 Encoder left_enc(19,18);
 
 double setpointr, inputr, outputr;
-double rp = 60, ri = 0, rd = 0; 
+double rp = 40, ri = 20, rd = 0; 
 double setpointl, inputl, outputl;
-double lp = 60, li = 0, ld = 0;
+double lp = 40, li = 20, ld = 0;
 
 PID pid_right(&inputr, &outputr, &setpointr, rp, ri, rd, 0);
 PID pid_left(&inputl, &outputl, &setpointl, lp, li, ld, 0);
@@ -192,8 +192,10 @@ void drive_differential (float left_distance, float right_distance, float s = 50
   Serial.println();
   #endif
 
+  bool reached = false;
+  unsigned long reached_time = 0;
 
-  while (abs(inputl - setpointl) > 0.1 || abs(inputr - setpointr) > 0.1 || true) {
+  while (true) {
     inputl = ticks_to_cm(left_enc.read());
     inputr = ticks_to_cm(right_enc.read());
 
@@ -214,6 +216,16 @@ void drive_differential (float left_distance, float right_distance, float s = 50
     }else{
       analogWrite(left_backward_pin, constrain(abs(outputl), 0, 255));
       analogWrite(left_forward_pin, 0);  
+    }
+
+    if (!reached && abs(inputl - setpointl) <= 0.1 && abs(inputr - setpointr) <= 0.1) {
+      reached = true;
+      reached_time = millis();
+    }
+
+    // If reached, check if 2 seconds have passed
+    if (reached && (millis() - reached_time >= 2000)) {
+      break;
     }
 
     delay(in_loop_delay);
