@@ -19,24 +19,27 @@
 //#define DEBUG_ENC
 //#define DEBUG2
 //#define DEBUGOUTPUT
+#define DEBUGINTERMEDIATE
 
-#define DEBUGPID
+//#define DEBUGPID
 
 #define ENCODER_USE_INTERRUPTS
 
 Encoder right_enc(2,3);
 Encoder left_enc(19,18);
 
-double setpoint1, input1, output1;
-double rp = 1, ri = 1, rd = 1; 
-double setpoint2, input2, output2;
-double lp = 1, li = 1, ld = 1;
+double setpointr, inputr, outputr;
+double rp = 2, ri = 0, rd = 0; 
+double setpointl, inputl, outputl;
+double lp = 2, li = 0, ld = 0;
 
-PID pid_right(&input1, &output1, &setpoint1, rp, ri, rd, 0);
-PID pid_left(&input2, &output2, &setpoint2, lp, li, ld, 0);
+PID pid_right(&inputr, &outputr, &setpointr, rp, ri, rd, 0);
+PID pid_left(&inputl, &outputl, &setpointl, lp, li, ld, 0);
 
 static const float ticks_per_cm = 1700; // TODO: measure this value
 static const float steps_per_cm = 50.0; // TODO: measure this value
+
+static const int in_loop_delay = 10;
 /***
  * Rotates the bot around a point on the axis of the wheels.
  * @param degrees the degrees of the rotation in degrees
@@ -85,9 +88,9 @@ void rotate (float deg, float dist = 0, float s = 50){
 
 
 
-  for(float step = 0; step <= total_dist; step+= .01){
-    setpoint2 = (step * left_ratio);
-    setpoint1 = (step * right_ratio);
+  for(float step = 0; step <= total_dist; step+= .05){
+    setpointl = (step * left_ratio);
+    setpointr = (step * right_ratio);
 
     {
       #ifdef DEBUG3
@@ -100,15 +103,15 @@ void rotate (float deg, float dist = 0, float s = 50){
       #endif
     }   
 
-    input2 = ticks_to_cm(left_enc.read());
-    input1 = ticks_to_cm(right_enc.read());
+    inputl = ticks_to_cm(left_enc.read());
+    inputr = ticks_to_cm(right_enc.read());
 
 {
     #ifdef DEBUG2
     Serial.print("Input Left: ");
-    Serial.print(input2);
+    Serial.print(inputl);
     Serial.print(" cm, Input Right: ");
-    Serial.print(input1);
+    Serial.print(inputr);
     Serial.println(" cm");
 
     //Ticks
@@ -124,44 +127,95 @@ void rotate (float deg, float dist = 0, float s = 50){
 
     #ifdef DEBUGOUTPUT
     Serial.print("Output Left: ");
-    Serial.print(output2);
+    Serial.print(outputl);
     Serial.print(", Output Right: ");
-    Serial.println(output1);
+    Serial.println(outputr);
     #endif
 
     #ifdef DEBUGPID
     Serial.print("PID Left in: ");
-    Serial.print(input1);
+    Serial.print(inputl);
     Serial.print(", out: ");
-    Serial.print(output1);
+    Serial.print(outputl);
     Serial.print(", setpoint: ");
-    Serial.println(setpoint1);
+    Serial.println(setpointl);
     Serial.print("PID Right in: ");
-    Serial.print(input2);
+    Serial.print(inputr);
     Serial.print(", out: ");
-    Serial.print(output2);
+    Serial.print(outputr);
     Serial.print(", setpoint: ");
-    Serial.println(setpoint2);
+    Serial.println(setpointr);
     #endif
 
     
-    if(output2 > 0){
-      analogWrite(right_forward_pin, constrain(abs(output2) * 10, 0, 255)); // TODO: some translation
+    if(outputl < 0){
+      analogWrite(right_forward_pin, constrain(abs(outputl) * 10, 0, 255)); // TODO: some translation
       analogWrite(right_backward_pin, 0);
     }else{
-      analogWrite(right_backward_pin, constrain(abs(output2) * 10, 0, 255));
+      analogWrite(right_backward_pin, constrain(abs(outputl) * 10, 0, 255));
       analogWrite(right_forward_pin, 0);
     }
 
-    if(output1 > 0){
-      analogWrite(left_forward_pin, constrain(abs(output1) * 10, 0, 255)); // TODO: some translation
+    if(outputr < 0){
+      analogWrite(left_forward_pin, constrain(abs(outputr) * 10, 0, 255)); // TODO: some translation
       analogWrite(left_backward_pin, 0);
     }else{
-      analogWrite(left_backward_pin, constrain(abs(output1) * 10, 0, 255));
+      analogWrite(left_backward_pin, constrain(abs(outputr) * 10, 0, 255));
       analogWrite(left_forward_pin, 0);  
     }
 
-    delay(10);
+    delay(in_loop_delay);
+  }
+  setpointl = left_dist;
+  setpointr = right_dist;
+
+  #ifdef DEBUGINTERMEDIATE
+  Serial.print("PID Left in: ");
+  Serial.print(inputl);
+  Serial.print(", out: ");
+  Serial.print(outputl);
+  Serial.print(", setpoint: ");
+  Serial.println(setpointl);
+  Serial.print("PID Right in: ");
+  Serial.print(inputr);
+  Serial.print(", out: ");
+  Serial.print(outputr);
+  Serial.print(", setpoint: ");
+  Serial.println(setpointr);
+
+  // Encoder values
+  Serial.print("Ticks Left: ");
+  Serial.print(left_enc.read());
+  Serial.print(", Ticks Right: ");
+  Serial.print(right_enc.read());
+  Serial.println();
+  #endif
+
+
+  while (abs(inputl - setpointl) > 0.1 /*|| abs(inputr - setpointr) > 0.1*/) {
+    inputl = ticks_to_cm(left_enc.read());
+    inputr = ticks_to_cm(right_enc.read());
+
+    pid_left.Compute();
+    pid_right.Compute();
+
+    if(outputl < 0){
+      analogWrite(right_forward_pin, constrain(abs(outputl) * 10, 0, 255));
+      analogWrite(right_backward_pin, 0);
+    }else{
+      analogWrite(right_backward_pin, constrain(abs(outputl) * 10, 0, 255));
+      analogWrite(right_forward_pin, 0);
+    }
+
+    if(outputr < 0){
+      analogWrite(left_forward_pin, constrain(abs(outputr) * 10, 0, 255));
+      analogWrite(left_backward_pin, 0);
+    }else{
+      analogWrite(left_backward_pin, constrain(abs(outputr) * 10, 0, 255));
+      analogWrite(left_forward_pin, 0);  
+    }
+
+    delay(in_loop_delay);
   }
   
   analogWrite(left_forward_pin, 0);
@@ -187,18 +241,18 @@ void drive(float dist, float s = 50){
 }
 
 void reset_r_PID(){
-  input1 = 0;
-  output1 = 0;
-  setpoint1 = 0;
+  inputr = 0;
+  outputr = 0;
+  setpointr = 0;
   pid_right.SetMode(MANUAL);
   pid_right.SetMode(AUTOMATIC);
   pid_right.SetOutputLimits(-255., 255);
 }
 
 void reset_l_PID(){
-  input2 = 0;
-  output2 = 0;
-  setpoint2 = 0;
+  inputl = 0;
+  outputl = 0;
+  setpointl = 0;
   pid_left.SetMode(MANUAL);
   pid_left.SetMode(AUTOMATIC);
   pid_left.SetOutputLimits(-255., 255);
