@@ -29,9 +29,9 @@ Encoder right_enc(3,2);
 Encoder left_enc(19,18);
 
 double setpointr, inputr, outputr;
-double rp = 100, ri = 0, rd = 0; 
+double rp = 60, ri = 0, rd = 0; 
 double setpointl, inputl, outputl;
-double lp = 100, li = 0, ld = 0;
+double lp = 60, li = 0, ld = 0;
 
 PID pid_right(&inputr, &outputr, &setpointr, rp, ri, rd, 0);
 PID pid_left(&inputl, &outputl, &setpointl, lp, li, ld, 0);
@@ -40,6 +40,31 @@ static const float ticks_per_cm = 1700 / (2* PI); // TODO: measure this value
 static const float steps_per_cm = 50.0; // TODO: measure this value
 
 static const int in_loop_delay = 0;
+
+void reset_r_PID(){
+  inputr = 0;
+  outputr = 0;
+  setpointr = 0;
+  pid_right.SetMode(MANUAL);
+  pid_right.SetMode(AUTOMATIC);
+  pid_right.SetOutputLimits(-255., 255);
+}
+
+void reset_l_PID(){
+  inputl = 0;
+  outputl = 0;
+  setpointl = 0;
+  pid_left.SetMode(MANUAL);
+  pid_left.SetMode(AUTOMATIC);
+  pid_left.SetOutputLimits(-255., 255);
+}
+
+float ticks_to_cm(long count){
+  return count / ticks_per_cm;
+}
+int cm_to_ticks(float cm){
+  return cm * steps_per_cm;
+}
 /***
  * Rotates the bot around a point on the axis of the wheels.
  * @param degrees the degrees of the rotation in degrees
@@ -168,7 +193,7 @@ void drive_differential (float left_distance, float right_distance, float s = 50
   #endif
 
 
-  while (abs(inputl - setpointl) > 0.1 || abs(inputr - setpointr) > 0.1) {
+  while (abs(inputl - setpointl) > 0.1 || abs(inputr - setpointr) > 0.1 || true) {
     inputl = ticks_to_cm(left_enc.read());
     inputr = ticks_to_cm(right_enc.read());
 
@@ -206,9 +231,6 @@ void drive_differential (float left_distance, float right_distance, float s = 50
 }
 
 void rotate (float deg, float dist = 0, float s = 50){
-
-  
-
   pid_right.SetMode(AUTOMATIC);
   pid_left.SetMode(AUTOMATIC);
 
@@ -240,34 +262,13 @@ void rotate (float deg, float dist = 0, float s = 50){
 }
 
 
-float ticks_to_cm(long count){
-  return count / ticks_per_cm;
-}
-int cm_to_ticks(float cm){
-  return cm * steps_per_cm;
-}
+
 
 void drive(float dist, float s = 50){
-
+  drive_differential(dist, dist, s);
 }
 
-void reset_r_PID(){
-  inputr = 0;
-  outputr = 0;
-  setpointr = 0;
-  pid_right.SetMode(MANUAL);
-  pid_right.SetMode(AUTOMATIC);
-  pid_right.SetOutputLimits(-255., 255);
-}
 
-void reset_l_PID(){
-  inputl = 0;
-  outputl = 0;
-  setpointl = 0;
-  pid_left.SetMode(MANUAL);
-  pid_left.SetMode(AUTOMATIC);
-  pid_left.SetOutputLimits(-255., 255);
-}
 
 
 void setup() {
@@ -300,11 +301,11 @@ void loop() {
 void test_rotate_serial() {
   if (Serial.available() > 0) {
     String input = Serial.readStringUntil('\n');
-    float deg = input.toFloat();
-    if (deg != 0.0) {
+    float dist = input.toFloat();
+    if (dist != 0.0) {
       Serial.print("Rotating: ");
-      Serial.println(deg);
-      drive_differential(10, 0 );
+      Serial.println(dist);
+      drive_differential(dist, 0 );
       Serial.println("Done rotating.");
     }
     // print overshoot
